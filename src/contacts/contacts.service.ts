@@ -70,4 +70,38 @@ export class ContactsService {
 
     return { name: 'send_test_mail', status: 'success' };
   }
+
+  /**
+   * お問い合わせ登録処理
+   * @param createContactDto お問い合わせデータ
+   * @returns { status: 'success' }
+   */
+  async registNewContact(createContactDto: CreateContactDto) {
+    // お問い合わせデータをDB登録
+    const res = await this.contactRepository.save(createContactDto);
+
+    // お問い合わせデータを管理者へ送信
+    const toAdminTxt = nunjucks.render('contact/to-admin.txt.njk', res);
+    const toAdminHtml = nunjucks.render('contact/to-admin.html.njk', res);
+    await this.transporter.sendMail({
+      from: '"foo" <info@gmai.com>',
+      to: '"bar" <info@gmai.com>',
+      subject: 'お問い合わせ',
+      text: toAdminTxt,
+      html: toAdminHtml,
+    });
+
+    // お問い合わせデータをお問い合わせ者へ送信
+    const toCustomerTxt = nunjucks.render('contact/to-customer.txt.njk', res);
+    const toCustomerHtml = nunjucks.render('contact/to-customer.html.njk', res);
+    await this.transporter.sendMail({
+      from: '"foo" <info@gmai.com>',
+      to: '"' + res.name + '" <' + res.email + '>',
+      subject: 'お問い合わせいただきありがとうございます',
+      text: toCustomerTxt,
+      html: toCustomerHtml,
+    });
+
+    return { name: 'regist_new_contact', status: 'success' };
+  }
 }

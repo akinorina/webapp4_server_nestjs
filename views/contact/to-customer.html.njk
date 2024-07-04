@@ -1,0 +1,28 @@
+<p>
+前略<br>
+本日はお問い合わせいただき、ありがとうございます。<br>
+お問い合わせいただいた内容は次のとおりです。
+</p>
+
+<table class="content">
+<tr>
+<th>氏名</th>
+<td>{{ name }} ( {{ nameKana }} )</td>
+</tr>
+<tr>
+<th>メールアドレス</th>
+<td>{{ email }}</td>
+</tr>
+<tr>
+<th>メッセージ</th>
+<td>{{ message | striptags(true) | escape | nl2br }}</td>
+</tr>
+</table>
+
+<p>
+遅くとも２〜３日以内に返信するようにしております。<br>
+恐れ入りますが、しばらくお待ちください。<br>
+</p>
+
+管理者<br>
+{{ createdAt }}

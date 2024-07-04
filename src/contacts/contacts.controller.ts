@@ -44,4 +44,9 @@ export class ContactsController {
   sendTestMail() {
     return this.contactsService.sendTestMail();
   }
+
+  @Post('regist_new_contact')
+  registNewContact(@Body() createContactDto: CreateContactDto) {
+    return this.contactsService.registNewContact(createContactDto);
+  }
 }
