@@ -39,4 +39,9 @@ export class ContactsController {
   remove(@Param('id') id: string) {
     return this.contactsService.remove(+id);
   }
+
+  @Post('send_test_mail')
+  sendTestMail() {
+    return this.contactsService.sendTestMail();
+  }
 }
