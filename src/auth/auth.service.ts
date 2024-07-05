@@ -20,4 +20,8 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
+
+  async signOut() {
+    return { access_token: null };
+  }
 }
