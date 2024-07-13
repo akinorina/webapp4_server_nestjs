@@ -40,7 +40,6 @@ export class ImagesService {
       path.parse(file.originalname).name +
       dayjs().format('_YYYYMMDDHHmmss') +
       path.parse(file.originalname).ext;
-    const endpoint = configuration().storage.endpoint;
     const bucketName = configuration().storage.bucketName;
     const objectKey = 'images/' + fileName;
     const imagePath = '/' + bucketName + '/' + objectKey;
@@ -62,9 +61,9 @@ export class ImagesService {
       readStream.close();
 
       // DBへデータ登録
+      createImageDto.bucket = bucketName;
       createImageDto.objectKey = objectKey;
       createImageDto.path = imagePath;
-      createImageDto.url = endpoint + imagePath;
       return await this.imageRepository.save(createImageDto);
     }
   }

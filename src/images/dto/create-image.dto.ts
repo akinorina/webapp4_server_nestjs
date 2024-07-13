@@ -1,6 +1,6 @@
 export class CreateImageDto {
   name: string;
-  url: string;
-  path: string;
+  bucket: string;
   objectKey: string;
+  path: string;
 }

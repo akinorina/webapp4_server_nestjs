@@ -16,14 +16,14 @@ export class Image {
   @PrimaryGeneratedColumn({ comment: 'ID' })
   id: number = 0;
 
-  @Column({ default: '', comment: '画像名' })
+  @Column({ default: '', comment: '画像表示名' })
   name: string = '';
+
+  @Column({ default: '', comment: 'Bucket名' })
+  bucket: string = '';
 
   @Column({ default: '', comment: 'オブジェクトキー' })
   objectKey: string = '';
-
-  @Column({ default: '', comment: 'URL' })
-  url: string = '';
 
   @Column({ default: '', comment: 'PATH' })
   path: string = '';
