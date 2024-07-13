@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { ContactsModule } from './contacts/contacts.module';
 import { AuthModule } from './auth/auth.module';
+import { ImagesModule } from './images/images.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -13,6 +14,7 @@ import configuration from './config/configuration';
     UsersModule,
     ContactsModule,
     AuthModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
