@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import {
   S3Client,
-  // This command supersedes the ListObjectsCommand and is the recommended way to list objects.
+  S3ClientConfig,
   ListObjectsV2Command,
   PutObjectCommand,
   DeleteObjectCommand,
@@ -17,40 +17,38 @@ import configuration from 'src/config/configuration';
 
 @Injectable()
 export class ImagesService {
-  s3client: S3Client | null = null;
-  // accessKey: '0Jsp5xiDJxGqAIQLCQlj',
-  // secretKey: 'RqlujYfEbIPSmGrIpWgMq2q29rnN8L6knygAghvH',
+  s3ClientConfig: S3ClientConfig = {
+    region: configuration().storage.region,
+    endpoint: configuration().storage.endpoint,
+    forcePathStyle: configuration().storage.forcePathStyle,
+    credentials: {
+      accessKeyId: configuration().storage.accessKeyId,
+      secretAccessKey: configuration().storage.secretAccessKey,
+    },
+  };
+  s3client = new S3Client(this.s3ClientConfig);
+  bucketName = configuration().storage.bucketName;
+  keyPrefix = 'images';
 
   constructor(
     @Inject('IMAGE_REPOSITORY')
     private imageRepository: Repository<Image>,
-  ) {
-    this.s3client = new S3Client({
-      region: configuration().storage.region,
-      endpoint: configuration().storage.endpoint,
-      forcePathStyle: configuration().storage.forcePathStyle,
-      credentials: {
-        accessKeyId: configuration().storage.accessKeyId,
-        secretAccessKey: configuration().storage.secretAccessKey,
-      },
-    });
-  }
+  ) {}
 
   async create(createImageDto: CreateImageDto, file: Express.Multer.File) {
     const fileName =
       path.parse(file.originalname).name +
       dayjs().format('_YYYYMMDDHHmmss') +
       path.parse(file.originalname).ext;
-    const bucketName = configuration().storage.bucketName;
-    const objectKey = 'images/' + fileName;
-    const imagePath = '/' + bucketName + '/' + objectKey;
+    const objectKey = this.keyPrefix + '/' + fileName;
+    const imagePath = '/' + this.bucketName + '/' + objectKey;
 
     // アップロードファイル読み込み
     const readStream = fs.createReadStream(file.path);
     try {
       // Object Strage へ書き込み
       const command = new PutObjectCommand({
-        Bucket: bucketName,
+        Bucket: this.bucketName,
         Key: objectKey,
         Body: readStream,
         ContentType: file.mimetype,
@@ -62,7 +60,7 @@ export class ImagesService {
       readStream.close();
 
       // DBへデータ登録
-      createImageDto.bucket = bucketName;
+      createImageDto.bucket = this.bucketName;
       createImageDto.objectKey = objectKey;
       createImageDto.path = imagePath;
       return await this.imageRepository.save(createImageDto);
@@ -90,13 +88,14 @@ export class ImagesService {
 
   async remove(id: number) {
     // remove the target object
-    const imageData = await this.imageRepository.findOneByOrFail({ id: id });
-    const command3 = new DeleteObjectCommand({
-      Bucket: imageData.bucket,
-      Key: imageData.objectKey,
-    });
-    await this.s3client.send(command3);
-
+    const imageData = await this.imageRepository.findOneBy({ id: id });
+    if (imageData) {
+      const command3 = new DeleteObjectCommand({
+        Bucket: imageData.bucket,
+        Key: imageData.objectKey,
+      });
+      await this.s3client.send(command3);
+    }
     // softdelete the target DB data.
     return this.imageRepository.softDelete(id);
   }
