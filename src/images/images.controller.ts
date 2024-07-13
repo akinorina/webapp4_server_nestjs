@@ -3,11 +3,11 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseInterceptors,
   UploadedFile,
+  Put,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -21,7 +21,6 @@ export class ImagesController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
-  // uploadFile(@UploadedFile() file: Express.Multer.File) {
   create(
     @Body() createImageDto: CreateImageDto,
     @UploadedFile() file: Express.Multer.File,
@@ -39,7 +38,7 @@ export class ImagesController {
     return this.imagesService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateImageDto: UpdateImageDto) {
     return this.imagesService.update(+id, updateImageDto);
   }
@@ -49,15 +48,8 @@ export class ImagesController {
     return this.imagesService.remove(+id);
   }
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
-    console.log('originalname', file.originalname);
-  }
-
-  @Post('cmd')
-  cmd() {
-    return this.imagesService.cmd();
+  @Post('list-s3')
+  listS3() {
+    return this.imagesService.listS3();
   }
 }

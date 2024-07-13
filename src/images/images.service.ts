@@ -8,6 +8,7 @@ import {
   // This command supersedes the ListObjectsCommand and is the recommended way to list objects.
   ListObjectsV2Command,
   PutObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 import * as path from 'node:path';
@@ -69,30 +70,38 @@ export class ImagesService {
   }
 
   async findAll() {
-    // return `This action returns all images`;
     return await this.imageRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} image`;
+  async findOne(id: number) {
+    return await this.imageRepository.findOneByOrFail({ id: id });
   }
 
-  update(id: number, updateImageDto: UpdateImageDto) {
-    return `This action updates a #${id} image`;
+  async update(id: number, updateImageDto: UpdateImageDto) {
+    const imageData = await this.imageRepository.findOneByOrFail({ id: id });
+    // 以下のデータ項目は更新しない。
+    updateImageDto.bucket = imageData.bucket;
+    updateImageDto.objectKey = imageData.objectKey;
+    updateImageDto.path = imageData.path;
+
+    // update the target DB data.
+    return this.imageRepository.update(id, updateImageDto);
   }
 
-  remove(id: number) {
-    // // remove object --- Bucket:'webapp4' / key:'IMG_5436s.jpg'
-    // const command3 = new DeleteObjectCommand({
-    //   Bucket: 'webapp4',
-    //   Key: 'IMG_5436s.jpg',
-    // });
-    // const result3 = await this.s3client.send(command3);
-    // console.log(result3);
-    return `This action removes a #${id} image`;
+  async remove(id: number) {
+    // remove the target object
+    const imageData = await this.imageRepository.findOneByOrFail({ id: id });
+    const command3 = new DeleteObjectCommand({
+      Bucket: imageData.bucket,
+      Key: imageData.objectKey,
+    });
+    await this.s3client.send(command3);
+
+    // softdelete the target DB data.
+    return this.imageRepository.softDelete(id);
   }
 
-  async cmd() {
+  async listS3() {
     // list objects
     const command = new ListObjectsV2Command({
       Bucket: 'webapp4',
