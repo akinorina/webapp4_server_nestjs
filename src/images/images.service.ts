@@ -115,7 +115,7 @@ export class ImagesService {
       id: id,
       name: updateImageDto.name,
       bucket: imageData.bucket,
-      objectKey: imageData.path,
+      objectKey: imageData.objectKey,
       path: imageData.path,
     };
     return this.imageRepository.update(id, updateData);
