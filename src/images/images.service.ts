@@ -109,13 +109,16 @@ export class ImagesService {
 
   async update(id: number, updateImageDto: UpdateImageDto) {
     const imageData = await this.imageRepository.findOneByOrFail({ id: id });
-    // 以下のデータ項目は更新しない。
-    updateImageDto.bucket = imageData.bucket;
-    updateImageDto.objectKey = imageData.objectKey;
-    updateImageDto.path = imageData.path;
 
     // update the target DB data.
-    return this.imageRepository.update(id, updateImageDto);
+    const updateData = {
+      id: id,
+      name: updateImageDto.name,
+      bucket: imageData.bucket,
+      objectKey: imageData.path,
+      path: imageData.path,
+    };
+    return this.imageRepository.update(id, updateData);
   }
 
   async remove(id: number) {
