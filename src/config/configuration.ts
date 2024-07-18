@@ -31,4 +31,13 @@ export default () => ({
           }
         : null,
   },
+
+  storage: {
+    region: process.env.STORAGE_REGION,
+    endpoint: process.env.STORAGE_ENDPOINT,
+    forcePathStyle: process.env.STORAGE_FORCEPATHSTYLE === 'true' || false,
+    accessKeyId: process.env.STORAGE_ACCESS_KEY_ID,
+    secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY,
+    bucketName: process.env.STORAGE_BUCKET_NAME,
+  },
 });
