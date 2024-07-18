@@ -35,7 +35,39 @@ export class ImagesService {
     private imageRepository: Repository<Image>,
   ) {}
 
-  async create(createImageDto: CreateImageDto, file: Express.Multer.File) {
+  async create(createImageDto: CreateImageDto) {
+    const fileName =
+      path.parse(createImageDto.originalname).name +
+      dayjs().format('_YYYYMMDDHHmmss') +
+      path.parse(createImageDto.originalname).ext;
+    const objectKey = this.keyPrefix + '/' + fileName;
+    const imagePath = '/' + this.bucketName + '/' + objectKey;
+
+    // 画像データ(Base64)をデコード
+    const base64Data = createImageDto.data;
+    const fileData = base64Data.replace(/^data:\w+\/\w+;base64,/, '');
+    const decodedFile = Buffer.from(fileData, 'base64');
+
+    // Object Strage へ書き込み
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: objectKey,
+      Body: decodedFile,
+      ContentType: createImageDto.mimetype,
+    });
+    await this.s3client.send(command);
+
+    // DBへデータ登録
+    const imageData = {
+      name: createImageDto.name,
+      bucket: this.bucketName,
+      objectKey: objectKey,
+      path: imagePath,
+    };
+    return await this.imageRepository.save(imageData);
+  }
+
+  async upload(createImageDto: CreateImageDto, file: Express.Multer.File) {
     const fileName =
       path.parse(file.originalname).name +
       dayjs().format('_YYYYMMDDHHmmss') +

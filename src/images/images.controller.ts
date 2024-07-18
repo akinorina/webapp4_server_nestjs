@@ -20,12 +20,17 @@ export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 
   @Post()
+  create(@Body() createImageDto: CreateImageDto) {
+    return this.imagesService.create(createImageDto);
+  }
+
+  @Post('upload')
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
-  create(
+  upload(
     @Body() createImageDto: CreateImageDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.imagesService.create(createImageDto, file);
+    return this.imagesService.upload(createImageDto, file);
   }
 
   @Get()
